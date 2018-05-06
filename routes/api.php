@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -13,19 +11,26 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::group(['middleware' => 'api', 'prefix' => 'v1'], function ($router) {
 
-Route::group(['middleware' => 'api'], function ($router) {
-
-    $router->get('search', 'KoobApiController@index');
-
+    /** @var $router \Illuminate\Routing\Router */
     $router->group(['prefix' => 'auth'], function ($router) {
-        /**
-         * @var $router \Illuminate\Routing\Router
-         */
-        $router->get('me', 'Api\AuthController@me');
-        $router->post('login', 'Api\AuthController@login');
-        $router->post('logout', 'Api\AuthController@logout');
-        $router->get('refresh', 'Api\AuthController@refresh');
+        /** @var $router \Illuminate\Routing\Router */
+        $router->get('me', 'Api\AuthController@me')->name('auth.me');
+        $router->get('refresh', 'Api\AuthController@refresh')->name('auth.refresh');
+        $router->post('login', 'Api\AuthController@login')->name('auth.login');
+        $router->post('logout', 'Api\AuthController@logout')->name('auth.logout');
     });
+
+    $router->get('search', 'KoobApiController@index')->name('search');
+
+    $router->resource('users', 'Api\UserController')->except(['index', 'create', 'edit']);
+    $router->resource('books', 'Api\BookController')->except(['create', 'edit']);
+    $router->resource('books/favorite', 'Api\BookFavoriteController')
+           ->only(['update', 'destroy'])->parameter('favorite', 'book');
+    $router->resource('books/list', 'Api\BookListController')
+           ->only(['store', 'destroy'])->parameter('list', 'book');
+    $router->resource('books/status', 'Api\BookStatusController')
+           ->only(['update'])->parameter('status', 'book');
 
 });

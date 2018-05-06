@@ -20,8 +20,11 @@ class CreateBooksTable extends Migration
             $table->string('title');
             $table->string('author');
             $table->string('picture')->nullable();
+            $table->string('picture_thumb')->nullable();
             $table->text('sinopse')->nullable();
-            $table->string('status')->nullable();
+            $table->boolean('favorite')->default(0);
+            $table->boolean('listed')->default(0);
+            $table->string('status')->default('N/D'); // Possible status: N/D, reading, finished
             $table->timestamps();
         });
     }

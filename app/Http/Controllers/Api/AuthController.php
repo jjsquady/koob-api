@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class AuthController extends Controller
 {
@@ -14,7 +15,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('jwt.auth:api', ['except' => ['login']]);
+        $this->middleware('jwt.auth:api')->except('login');
     }
 
     /**
@@ -84,10 +85,21 @@ class AuthController extends Controller
      */
     protected function respondWithToken($token)
     {
+        $this->registerUserLoginDateTime();
+
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'expires_in' => auth()->factory()->getTTL() * 60,
+        ]);
+    }
+
+    protected function registerUserLoginDateTime() {
+        $user = auth()->user();
+        $user->logins()->create([
+            'login_at' => Carbon::now('America/Sao_Paulo')->toDateTimeString(),
+            'ip' => request()->ip(),
+            'user_agent' => request()->userAgent()
         ]);
     }
 }
