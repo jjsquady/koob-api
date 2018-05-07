@@ -22,4 +22,9 @@ class UserController extends Controller
             'user' => $user
         ]);
     }
+
+    public function show(User $user)
+    {
+        return $user;
+    }
 }

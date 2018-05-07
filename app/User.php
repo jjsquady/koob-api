@@ -5,10 +5,13 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use YourAppRocks\EloquentUuid\Traits\HasUuid;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use Notifiable;
+    use Notifiable, HasUuid;
+
+    protected $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.
@@ -41,7 +44,7 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTIdentifier()
     {
-        return $this->getKey();
+        return $this->getAttribute('uuid');
     }
 
     /**
@@ -51,7 +54,13 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims()
     {
-        return [];
+        return [
+            'user' => [
+                'name'         => $this->name,
+                'latest_login' => $this->latest_login,
+                'uuid'         => $this->uuid
+            ]
+        ];
     }
 
     public function logins()
@@ -62,7 +71,7 @@ class User extends Authenticatable implements JWTSubject
     public function getLatestLoginAttribute()
     {
         $latestLogin = optional(
-            optional(Login::where('user_id', $this->id)->get()->take(-2)->first())->login_at
+            optional(Login::where('user_uuid', $this->uuid)->get()->take(-2)->first())->login_at
         )->toDateTimeString();
         return $latestLogin;
     }
